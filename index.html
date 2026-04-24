@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriAI - 栄養管理アプリ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --bg2: #161719;
+    --bg3: #1e2023;
+    --bg4: #26292e;
+    --border: #2e3238;
+    --text: #f0f1f3;
+    --text2: #9ba3b0;
+    --text3: #5a6270;
+    --accent: #7fff72;
+    --accent2: #00d4aa;
+    --accent3: #ff7a5c;
+    --accent4: #ffd15e;
+    --accent5: #a78bfa;
+    --card-shadow: 0 2px 16px rgba(0,0,0,0.4);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .app-shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    grid-column: 1 / -1;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    height: 60px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+  .logo span { color: var(--text); }
+  .header-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text3);
+    margin-left: auto;
+  }
+  .header-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent5), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.8rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  .nav-section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    text-transform: uppercase;
+    padding: 12px 20px 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 0;
+    color: var(--text2);
+    font-size: 0.875rem;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active {
+    background: var(--bg3);
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+  .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+  /* ── MAIN ── */
+  .main {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ── PANELS (pages) ── */
+  .panel { display: none; flex-direction: column; gap: 20px; }
+  .panel.active { display: flex; }
+
+  /* ── COMMON CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .badge {
+    font-size: 0.65rem;
+    background: var(--bg4);
+    color: var(--text3);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 400;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #0a1a09; }
+  .btn-primary:hover { background: #6be863; }
+  .btn-secondary { background: var(--bg4); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--bg3); }
+  .btn-danger { background: rgba(255,122,92,0.15); color: var(--accent3); border: 1px solid rgba(255,122,92,0.3); }
+  .btn-danger:hover { background: rgba(255,122,92,0.25); }
+  .btn-sm { padding: 5px 11px; font-size: 0.78rem; }
+  .btn-xs { padding: 3px 8px; font-size: 0.72rem; }
+  .btn-icon { padding: 6px 10px; }
+
+  /* ── INPUTS ── */
+  .input, .select, .textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .input:focus, .select:focus, .textarea:focus { border-color: var(--accent); }
+  .input::placeholder { color: var(--text3); }
+  .select option { background: var(--bg3); }
+  .textarea { resize: vertical; min-height: 70px; }
+
+  /* ── FORM GROUPS ── */
+  .form-row {
+    display: grid;
+    gap: 12px;
+  }
+  .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label {
+    font-size: 0.75rem;
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  /* ── DASHBOARD STATS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stat-card.green::before { background: var(--accent); }
+  .stat-card.teal::before { background: var(--accent2); }
+  .stat-card.orange::before { background: var(--accent3); }
+  .stat-card.yellow::before { background: var(--accent4); }
+  .stat-label { font-size: 0.72rem; color: var(--text3); margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; line-height: 1; }
+  .stat-unit { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
+  .stat-bar {
+    margin-top: 10px;
+    height: 4px;
+    background: var(--bg4);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .stat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+  .green .stat-bar-fill { background: var(--accent); }
+  .teal .stat-bar-fill { background: var(--accent2); }
+  .orange .stat-bar-fill { background: var(--accent3); }
+  .yellow .stat-bar-fill { background: var(--accent4); }
+
+  /* ── NUTRIENT BARS ── */
+  .nutrient-list { display: flex; flex-direction: column; gap: 12px; }
+  .nutrient-row { display: flex; flex-direction: column; gap: 4px; }
+  .nutrient-header { display: flex; justify-content: space-between; align-items: center; }
+  .nutrient-name { font-size: 0.8rem; color: var(--text2); }
+  .nutrient-val {
+    font-size: 0.78rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text3);
+  }
+  .nutrient-bar {
+    height: 6px;
+    background: var(--bg4);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .nutrient-bar-fill { height: 100%; border-radius: 3px; }
+
+  /* ── MEAL ITEMS ── */
+  .meal-section { margin-bottom: 16px; }
+  .meal-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meal-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .meal-section-cal {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text3);
+    margin-left: auto;
+  }
+  .meal-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    transition: background 0.1s;
+  }
+  .meal-item:hover { background: var(--bg3); }
+  .meal-item-icon { font-size: 1.2rem; width: 28px; text-align: center; }
+  .meal-item-info { flex: 1; }
+  .meal-item-name { font-size: 0.85rem; }
+  .meal-item-sub { font-size: 0.72rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .meal-item-cal { font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--accent4); font-weight: 500; }
+  .meal-item-del {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+  }
+  .meal-item-del:hover { background: rgba(255,122,92,0.15); color: var(--accent3); }
+
+  /* ── AI RECOMMEND CARD ── */
+  .rec-card {
+    background: linear-gradient(135deg, rgba(127,255,114,0.08), rgba(0,212,170,0.05));
+    border: 1px solid rgba(127,255,114,0.2);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .rec-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .rec-ai-badge {
+    font-size: 0.65rem;
+    background: var(--accent);
+    color: #0a1a09;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 700;
+  }
+  .rec-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .rec-items { display: flex; flex-direction: column; gap: 10px; }
+  .rec-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .rec-item:hover { border-color: var(--accent); }
+  .rec-item-emoji { font-size: 1.6rem; }
+  .rec-item-info { flex: 1; }
+  .rec-item-name { font-size: 0.9rem; font-weight: 500; }
+  .rec-item-reason { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
+  .rec-item-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-align: right;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    width: 100%;
+    max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    flex: 1;
+  }
+  .modal-close {
+    background: var(--bg4);
+    border: none;
+    color: var(--text2);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: var(--bg3); color: var(--text); }
+
+  /* ── INGREDIENT LIST ── */
+  .ingredient-list { display: flex; flex-direction: column; gap: 8px; }
+  .ingredient-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .ingredient-name { font-size: 0.85rem; }
+  .ingredient-amount-input {
+    width: 70px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    text-align: center;
+    outline: none;
+  }
+  .ingredient-unit {
+    font-size: 0.75rem;
+    color: var(--text3);
+    min-width: 30px;
+  }
+  .ingredient-del {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .ingredient-del:hover { color: var(--accent3); }
+
+  /* ── SEARCH ── */
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .search-results { display: flex; flex-direction: column; gap: 6px; }
+  .search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .search-result-item:hover { border-color: var(--accent2); }
+  .search-result-name { font-size: 0.875rem; flex: 1; }
+  .search-result-cal {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent4);
+  }
+  .search-result-brand { font-size: 0.72rem; color: var(--text3); }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: none;
+    color: var(--text2);
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.15s;
+  }
+  .tab-btn.active { background: var(--bg2); color: var(--text); font-weight: 500; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── RESTAURANT CARDS ── */
+  .restaurant-grid { display: flex; flex-direction: column; gap: 10px; }
+  .restaurant-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .restaurant-card:hover { border-color: var(--accent2); }
+  .restaurant-rank {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text3);
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .restaurant-emoji { font-size: 2rem; flex-shrink: 0; }
+  .restaurant-info { flex: 1; }
+  .restaurant-name { font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
+  .restaurant-sub { font-size: 0.75rem; color: var(--text3); }
+  .restaurant-score {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .restaurant-score-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .restaurant-score-label { font-size: 0.65rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .fav-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px;
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+  .fav-btn:hover { transform: scale(1.2); }
+
+  /* ── SATISFACTION ── */
+  .satisfaction-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sat-btn {
+    flex: 1;
+    min-width: 70px;
+    padding: 12px 8px;
+    background: var(--bg3);
+    border: 2px solid var(--border);
+    color: var(--text2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 1.4rem;
+    text-align: center;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .sat-btn span { font-size: 0.72rem; }
+  .sat-btn:hover, .sat-btn.selected { border-color: var(--accent); background: rgba(127,255,114,0.08); }
+
+  /* ── AI CHAT ── */
+  .ai-chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .chat-msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .chat-msg.ai {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .chat-msg.user {
+    background: var(--accent);
+    color: #0a1a09;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  /* ── TOGGLE ── */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+  .toggle-label { font-size: 0.875rem; }
+  .toggle-switch {
+    width: 44px; height: 24px;
+    background: var(--bg4);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: var(--text3);
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle-switch.on { background: rgba(127,255,114,0.2); border-color: var(--accent); }
+  .toggle-switch.on::after { transform: translateX(20px); background: var(--accent); }
+
+  /* ── TAG ── */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .tag-green { background: rgba(127,255,114,0.12); color: var(--accent); border: 1px solid rgba(127,255,114,0.25); }
+  .tag-teal { background: rgba(0,212,170,0.12); color: var(--accent2); border: 1px solid rgba(0,212,170,0.25); }
+  .tag-orange { background: rgba(255,122,92,0.12); color: var(--accent3); border: 1px solid rgba(255,122,92,0.25); }
+  .tag-yellow { background: rgba(255,209,94,0.12); color: var(--accent4); border: 1px solid rgba(255,209,94,0.25); }
+  .tag-purple { background: rgba(167,139,250,0.12); color: var(--accent5); border: 1px solid rgba(167,139,250,0.25); }
+
+  /* ── AI LOADING ── */
+  .ai-loading {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  .ai-loading-dot {
+    width: 6px; height: 6px;
+    background: var(--text3);
+    border-radius: 50%;
+    animation: pulse 1.2s infinite;
+  }
+  .ai-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .ai-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% { transform: scale(1.2); opacity: 1; }
+  }
+
+  /* ── PROGRESS RING ── */
+  .ring-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 10px 0;
+  }
+  .ring-wrap {
+    position: relative;
+    width: 100px; height: 100px;
+  }
+  .ring-svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--bg4); stroke-width: 8; }
+  .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
+  .ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-val { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; }
+  .ring-sub { font-size: 0.6rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .ring-legend { display: flex; flex-direction: column; gap: 8px; }
+  .ring-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text2); }
+  .ring-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  /* ── NOTICE ── */
+  .notice {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  .notice-info { background: rgba(0,212,170,0.08); border: 1px solid rgba(0,212,170,0.2); color: var(--accent2); }
+  .notice-warn { background: rgba(255,209,94,0.08); border: 1px solid rgba(255,209,94,0.2); color: var(--accent4); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .app-shell { grid-template-columns: 1fr; }
+    .sidebar {
+      position: fixed;
+      left: -220px;
+      top: 60px;
+      height: calc(100vh - 60px);
+      width: 220px;
+      z-index: 200;
+      transition: left 0.25s;
+    }
+    .sidebar.open { left: 0; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .section-sub { font-size: 0.82rem; color: var(--text3); margin-bottom: 20px; }
+
+  /* ── TWO COL LAYOUT ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .three-col { grid-template-columns: 1fr 1fr; } }
+
+  /* ── CALENDAR STRIP ── */
+  .cal-strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+  .cal-day {
+    flex-shrink: 0;
+    width: 44px;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    transition: all 0.15s;
+  }
+  .cal-day:hover { border-color: var(--accent2); }
+  .cal-day.today { border-color: var(--accent); background: rgba(127,255,114,0.08); }
+  .cal-day-name { font-size: 0.65rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .cal-day-num { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin: 2px 0; }
+  .cal-day-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin: 0 auto; }
+
+  /* ── MAP PLACEHOLDER ── */
+  .map-placeholder {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text3);
+    font-size: 0.85rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 30px,
+      rgba(255,255,255,0.03) 30px,
+      rgba(255,255,255,0.03) 31px
+    ), repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 30px,
+      rgba(255,255,255,0.03) 30px,
+      rgba(255,255,255,0.03) 31px
+    );
+  }
+  .map-placeholder-icon { font-size: 2rem; position: relative; }
+  .map-placeholder-text { position: relative; }
+
+  /* ── CHART BARS ── */
+  .chart-bar-container { display: flex; align-items: flex-end; gap: 6px; height: 100px; }
+  .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--bg4); position: relative; transition: height 0.4s; }
+  .chart-bar.filled { background: var(--accent2); opacity: 0.7; }
+  .chart-bar.today-bar { background: var(--accent); opacity: 1; }
+  .chart-bar-label { font-size: 0.6rem; font-family: 'DM Mono', monospace; color: var(--text3); }
+
+  /* ── HISTORY LOG ── */
+  .history-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-date { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--text3); min-width: 50px; }
+  .history-name { font-size: 0.85rem; flex: 1; }
+  .history-cal { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--accent4); }
+
+  /* ── PROFILE ── */
+  .profile-avatar-large {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent5), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .goal-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: all 0.15s;
+    background: var(--bg3);
+  }
+  .goal-chip:hover, .goal-chip.selected { border-color: var(--accent); color: var(--accent); background: rgba(127,255,114,0.08); }
+
+  /* ── ALLERGY BADGE ── */
+  .allergy-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .allergy-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .allergy-badge.active { background: rgba(255,122,92,0.12); border-color: var(--accent3); color: var(--accent3); }
+
+  /* ── MISC ── */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text3);
+    font-size: 0.85rem;
+  }
+  .empty-state .es-icon { font-size: 2.5rem; margin-bottom: 8px; }
+  .helper-text { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+
+  .flex-row { display: flex; gap: 8px; align-items: center; }
+  .flex-row.wrap { flex-wrap: wrap; }
+  .ml-auto { margin-left: auto; }
+
+  .nutrition-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  .nutrition-table th {
+    text-align: left;
+    padding: 6px 10px;
+    color: var(--text3);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+  }
+  .nutrition-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(46,50,56,0.5);
+  }
+  .nutrition-table tr:last-child td { border-bottom: none; }
+
+  /* spinner */
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--bg4);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">Nutri<span>AI</span></div>
+    <div id="headerDate" class="header-date"></div>
+    <div class="header-avatar">YK</div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="nav-section-label">メイン</div>
+    <div class="nav-item active" data-panel="dashboard" onclick="showPanel('dashboard')">
+      <span class="nav-icon">📊</span> ダッシュボード
+    </div>
+    <div class="nav-item" data-panel="log" onclick="showPanel('log')">
+      <span class="nav-icon">🍽️</span> 食事ログ
+    </div>
+    <div class="nav-item" data-panel="search" onclick="showPanel('search')">
+      <span class="nav-icon">🔍</span> 食品検索
+    </div>
+    <div class="nav-item" data-panel="ai" onclick="showPanel('ai')">
+      <span class="nav-icon">🤖</span> AI栄養分析
+    </div>
+    <div class="nav-section-label">発見</div>
+    <div class="nav-item" data-panel="recommend" onclick="showPanel('recommend')">
+      <span class="nav-icon">✨</span> 次の食事を提案
+    </div>
+    <div class="nav-item" data-panel="map" onclick="showPanel('map')">
+      <span class="nav-icon">🗺️</span> 近くのお店
+    </div>
+    <div class="nav-section-label">記録</div>
+    <div class="nav-item" data-panel="history" onclick="showPanel('history')">
+      <span class="nav-icon">📅</span> 履歴
+    </div>
+    <div class="nav-item" data-panel="profile" onclick="showPanel('profile')">
+      <span class="nav-icon">👤</span> プロフィール
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="panel active" id="panel-dashboard">
+      <div>
+        <div class="section-title">今日の記録 <span style="font-size:1rem;color:var(--text3)">🌅</span></div>
+        <div class="section-sub" id="dashSub">朝食・昼食を記録しました。バランスは良好です。</div>
+      </div>
+
+      <!-- Calendar strip -->
+      <div class="card" style="padding:16px">
+        <div class="cal-strip" id="calStrip"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">カロリー</div>
+          <div class="stat-value" id="dashCal">1,240</div>
+          <div class="stat-unit">/ 2,000 kcal</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="dashCalBar" style="width:62%"></div></div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">タンパク質</div>
+          <div class="stat-value" id="dashProt">48</div>
+          <div class="stat-unit">/ 75 g</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="dashProtBar" style="width:64%"></div></div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-label">炭水化物</div>
+          <div class="stat-value" id="dashCarb">168</div>
+          <div class="stat-unit">/ 260 g</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="dashCarbBar" style="width:65%"></div></div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">脂質</div>
+          <div class="stat-value" id="dashFat">38</div>
+          <div class="stat-unit">/ 65 g</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="dashFatBar" style="width:58%"></div></div>
+        </div>
+      </div>
+
+      <!-- Two col: Macro ring + nutrient bars -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">マクロバランス</div>
+          <div class="ring-container">
+            <div class="ring-wrap">
+              <svg class="ring-svg" width="100" height="100" viewBox="0 0 100 100">
+                <circle class="ring-bg" cx="50" cy="50" r="41"/>
+                <circle class="ring-fill" cx="50" cy="50" r="41"
+                  stroke="var(--accent)"
+                  stroke-dasharray="257.6"
+                  stroke-dashoffset="98" id="ringCarb"/>
+                <circle class="ring-fill" cx="50" cy="50" r="41"
+                  stroke="var(--accent2)"
+                  stroke-dasharray="257.6"
+                  stroke-dashoffset="164" id="ringProt"/>
+                <circle class="ring-fill" cx="50" cy="50" r="41"
+                  stroke="var(--accent4)"
+                  stroke-dasharray="257.6"
+                  stroke-dashoffset="231" id="ringFat"/>
+              </svg>
+              <div class="ring-center">
+                <div class="ring-val">1,240</div>
+                <div class="ring-sub">kcal</div>
+              </div>
+            </div>
+            <div class="ring-legend">
+              <div class="ring-legend-item"><div class="ring-legend-dot" style="background:var(--accent)"></div>炭水化物 54%</div>
+              <div class="ring-legend-item"><div class="ring-legend-dot" style="background:var(--accent2)"></div>タンパク質 25%</div>
+              <div class="ring-legend-item"><div class="ring-legend-dot" style="background:var(--accent4)"></div>脂質 21%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">微量栄養素</div>
+          <div class="nutrient-list">
+            <div class="nutrient-row">
+              <div class="nutrient-header">
+                <span class="nutrient-name">食物繊維</span>
+                <span class="nutrient-val">12 / 21 g</span>
+              </div>
+              <div class="nutrient-bar"><div class="nutrient-bar-fill" style="width:57%;background:var(--accent)"></div></div>
+            </div>
+            <div class="nutrient-row">
+              <div class="nutrient-header">
+                <span class="nutrient-name">カルシウム</span>
+                <span class="nutrient-val">340 / 650 mg</span>
+              </div>
+              <div class="nutrient-bar"><div class="nutrient-bar-fill" style="width:52%;background:var(--accent2)"></div></div>
+            </div>
+            <div class="nutrient-row">
+              <div class="nutrient-header">
+                <span class="nutrient-name">鉄分</span>
+                <span class="nutrient-val">5.2 / 10.5 mg</span>
+              </div>
+              <div class="nutrient-bar"><div class="nutrient-bar-fill" style="width:50%;background:var(--accent3)"></div></div>
+            </div>
+            <div class="nutrient-row">
+              <div class="nutrient-header">
+                <span class="nutrient-name">ビタミンC</span>
+                <span class="nutrient-val">42 / 100 mg</span>
+              </div>
+              <div class="nutrient-bar"><div class="nutrient-bar-fill" style="width:42%;background:var(--accent4)"></div></div>
+            </div>
+            <div class="nutrient-row">
+              <div class="nutrient-header">
+                <span class="nutrient-name">ナトリウム</span>
+                <span class="nutrient-val">1,840 / 2,400 mg</span>
+              </div>
+              <div class="nutrient-bar"><div class="nutrient-bar-fill" style="width:77%;background:var(--accent5)"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's meal quick view -->
+      <div class="card">
+        <div class="card-title">
+          今日の食事
+          <span class="badge">3食</span>
+          <button class="btn btn-primary btn-sm ml-auto" onclick="showPanel('log')">+ 追加</button>
+        </div>
+        <div class="meal-section">
+          <div class="meal-section-header">
+            <span style="font-size:1rem">🌅</span>
+            <span class="meal-section-title">朝食</span>
+            <span class="meal-section-cal">420 kcal</span>
+          </div>
+          <div class="meal-item">
+            <div class="meal-item-icon">🥣</div>
+            <div class="meal-item-info">
+              <div class="meal-item-name">フルグラ（牛乳・プルーン入り）</div>
+              <div class="meal-item-sub">フルグラ 50g / 牛乳 1/3カップ / プルーン 3個</div>
+            </div>
+            <div class="meal-item-cal">390 kcal</div>
+          </div>
+          <div class="meal-item">
+            <div class="meal-item-icon">☕</div>
+            <div class="meal-item-info">
+              <div class="meal-item-name">ブラックコーヒー</div>
+              <div class="meal-item-sub">200ml</div>
+            </div>
+            <div class="meal-item-cal">3 kcal</div>
+          </div>
+        </div>
+        <div class="meal-section">
+          <div class="meal-section-header">
+            <span style="font-size:1rem">☀️</span>
+            <span class="meal-section-title">昼食</span>
+            <span class="meal-section-cal">820 kcal</span>
+          </div>
+          <div class="meal-item">
+            <div class="meal-item-icon">🍱</div>
+            <div class="meal-item-info">
+              <div class="meal-item-name">チキン南蛮弁当</div>
+              <div class="meal-item-sub">ほっともっと</div>
+            </div>
+            <div class="meal-item-cal">820 kcal</div>
+          </div>
+        </div>
+        <div class="notice notice-warn" style="margin-top:8px">
+          ⚠️ ナトリウムがやや多め。夕食は薄味・野菜中心が◎
+        </div>
+      </div>
+
+      <!-- AI recommendation card -->
+      <div class="rec-card">
+        <div class="rec-header">
+          <span class="rec-ai-badge">AI</span>
+          <div class="rec-title">次の食事（夕食）のおすすめ</div>
+        </div>
+        <div class="rec-items">
+          <div class="rec-item" onclick="showPanel('recommend')">
+            <div class="rec-item-emoji">🥗</div>
+            <div class="rec-item-info">
+              <div class="rec-item-name">鮭・豆腐・野菜の定食</div>
+              <div class="rec-item-reason">タンパク質補給・食物繊維強化・塩分控えめ</div>
+            </div>
+            <div class="rec-item-score">
+              95点<br>
+              <span style="font-size:0.65rem;color:var(--text3)">バランス</span>
+            </div>
+          </div>
+          <div class="rec-item" onclick="showPanel('recommend')">
+            <div class="rec-item-emoji">🍲</div>
+            <div class="rec-item-info">
+              <div class="rec-item-name">野菜たっぷりけんちん汁 + 玄米</div>
+              <div class="rec-item-reason">血糖値の急上昇を防ぐ低GI食</div>
+            </div>
+            <div class="rec-item-score">
+              88点<br>
+              <span style="font-size:0.65rem;color:var(--text3)">バランス</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MEAL LOG ===== -->
+    <div class="panel" id="panel-log">
+      <div>
+        <div class="section-title">食事ログ</div>
+        <div class="section-sub">今日食べたものを記録しましょう</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">食事を追加</div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'log-manual')">✏️ 手動入力</button>
+          <button class="tab-btn" onclick="switchTab(this,'log-search')">🔍 検索</button>
+          <button class="tab-btn" onclick="switchTab(this,'log-ai')">🤖 AI推測</button>
+          <button class="tab-btn" onclick="switchTab(this,'log-photo')">📷 写真</button>
+        </div>
+
+        <!-- Manual -->
+        <div class="tab-pane active" id="log-manual">
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">食事タイミング</label>
+              <select class="select" id="mealTiming">
+                <option>朝食</option><option>昼食</option><option>夕食</option><option>間食</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">料理名・食品名</label>
+              <input type="text" class="input" id="manualName" placeholder="例：ざるそば">
+            </div>
+          </div>
+          <div class="form-row cols-3" style="margin-top:10px">
+            <div class="form-group">
+              <label class="form-label">カロリー (kcal)</label>
+              <input type="number" class="input" id="manualCal" placeholder="例：350">
+            </div>
+            <div class="form-group">
+              <label class="form-label">タンパク質 (g)</label>
+              <input type="number" class="input" id="manualProt" placeholder="例：12">
+            </div>
+            <div class="form-group">
+              <label class="form-label">炭水化物 (g)</label>
+              <input type="number" class="input" id="manualCarb" placeholder="例：68">
+            </div>
+          </div>
+          <div class="form-row cols-3" style="margin-top:10px">
+            <div class="form-group">
+              <label class="form-label">脂質 (g)</label>
+              <input type="number" class="input" id="manualFat" placeholder="例：5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">食物繊維 (g)</label>
+              <input type="number" class="input" id="manualFiber" placeholder="例：3">
+            </div>
+            <div class="form-group">
+              <label class="form-label">塩分 (g)</label>
+              <input type="number" class="input" id="manualSalt" placeholder="例：1.2">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:10px">
+            <label class="form-label">満足度</label>
+            <div class="satisfaction-row">
+              <div class="sat-btn" onclick="selectSat(this)" data-val="1">😞<span>不満</span></div>
+              <div class="sat-btn" onclick="selectSat(this)" data-val="2">😐<span>普通</span></div>
+              <div class="sat-btn selected" onclick="selectSat(this)" data-val="3">😊<span>満足</span></div>
+              <div class="sat-btn" onclick="selectSat(this)" data-val="4">😄<span>大満足</span></div>
+              <div class="sat-btn" onclick="selectSat(this)" data-val="5">🤩<span>最高！</span></div>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="addMealManual()">✓ 記録する</button>
+            <button class="btn btn-secondary" onclick="clearManual()">クリア</button>
+          </div>
+        </div>
+
+        <!-- Search tab in log -->
+        <div class="tab-pane" id="log-search">
+          <div class="search-bar">
+            <input type="text" class="input" id="logSearchInput" placeholder="食品名・チェーン店名を入力...">
+            <button class="btn btn-primary" onclick="doLogSearch()">検索</button>
+          </div>
+          <div id="logSearchResults" class="search-results"></div>
+        </div>
+
+        <!-- AI estimate tab -->
+        <div class="tab-pane" id="log-ai">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">料理名</label>
+              <div style="display:flex;gap:8px">
+                <input type="text" class="input" id="aiDishName" placeholder="例：フルグラ、カレーライス、スパゲッティ...">
+                <button class="btn btn-primary" onclick="estimateDish()" id="estimateBtn">推測</button>
+              </div>
+            </div>
+          </div>
+          <div id="ingredientSection" style="display:none;margin-top:16px">
+            <div class="form-label" style="margin-bottom:8px">🧪 推測された材料（編集・削除可）</div>
+            <div class="ingredient-list" id="ingredientList"></div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="addIngredient()">+ 材料を追加</button>
+            <div class="divider"></div>
+            <div id="aiNutritionResult"></div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-primary" onclick="confirmAiMeal()">✓ この内容で記録</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Photo tab -->
+        <div class="tab-pane" id="log-photo">
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:3rem;margin-bottom:12px">📷</div>
+            <div style="color:var(--text2);font-size:0.9rem;margin-bottom:16px">写真から食事を判定します</div>
+            <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+            <button class="btn btn-primary" onclick="document.getElementById('photoInput').click()">写真を選択</button>
+            <p class="helper-text" style="margin-top:8px">スマートフォンではカメラで撮影もできます</p>
+            <div id="photoPreview" style="margin-top:16px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's log list -->
+      <div class="card">
+        <div class="card-title">
+          今日の記録
+          <span id="todayTotalCal" class="badge">合計 1,240 kcal</span>
+        </div>
+        <div id="mealLogList">
+          <div class="meal-section">
+            <div class="meal-section-header">
+              <span>🌅</span>
+              <span class="meal-section-title">朝食</span>
+              <span class="meal-section-cal">420 kcal</span>
+            </div>
+            <div class="meal-item" id="mi_1">
+              <div class="meal-item-icon">🥣</div>
+              <div class="meal-item-info">
+                <div class="meal-item-name">フルグラ（牛乳・プルーン入り）</div>
+                <div class="meal-item-sub">フルグラ 50g / 牛乳 1/3カップ / プルーン 3個</div>
+              </div>
+              <div class="meal-item-cal">390 kcal</div>
+              <button class="meal-item-del" onclick="deleteMealItem('mi_1')">✕</button>
+            </div>
+            <div class="meal-item" id="mi_2">
+              <div class="meal-item-icon">☕</div>
+              <div class="meal-item-info">
+                <div class="meal-item-name">ブラックコーヒー</div>
+                <div class="meal-item-sub">200ml</div>
+              </div>
+              <div class="meal-item-cal">3 kcal</div>
+              <button class="meal-item-del" onclick="deleteMealItem('mi_2')">✕</button>
+            </div>
+          </div>
+          <div class="meal-section">
+            <div class="meal-section-header">
+              <span>☀️</span>
+              <span class="meal-section-title">昼食</span>
+              <span class="meal-section-cal">820 kcal</span>
+            </div>
+            <div class="meal-item" id="mi_3">
+              <div class="meal-item-icon">🍱</div>
+              <div class="meal-item-info">
+                <div class="meal-item-name">チキン南蛮弁当</div>
+                <div class="meal-item-sub">ほっともっと</div>
+              </div>
+              <div class="meal-item-cal">820 kcal</div>
+              <button class="meal-item-del" onclick="deleteMealItem('mi_3')">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FOOD SEARCH ===== -->
+    <div class="panel" id="panel-search">
+      <div>
+        <div class="section-title">食品データベース検索</div>
+        <div class="section-sub">チェーン店・食品の栄養情報を調べる</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">検索</div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'search-general')">一般食品</button>
+          <button class="tab-btn" onclick="switchTab(this,'search-chain')">チェーン店</button>
+          <button class="tab-btn" onclick="switchTab(this,'search-product')">商品</button>
+        </div>
+
+        <div class="tab-pane active" id="search-general">
+          <div class="search-bar">
+            <input type="text" class="input" id="genSearchInput" placeholder="例：ご飯、鶏むね肉、豆腐...">
+            <button class="btn btn-primary" onclick="doGeneralSearch()">検索</button>
+          </div>
+          <div id="genSearchResults" class="search-results"></div>
+        </div>
+
+        <div class="tab-pane" id="search-chain">
+          <div class="search-bar">
+            <input type="text" class="input" id="chainSearchInput" placeholder="例：マクドナルド、吉野家、松屋...">
+            <button class="btn btn-primary" onclick="doChainSearch()">検索</button>
+          </div>
+          <div id="chainSearchResults" class="search-results"></div>
+        </div>
+
+        <div class="tab-pane" id="search-product">
+          <div class="search-bar">
+            <input type="text" class="input" id="productSearchInput" placeholder="例：カロリーメイト、プロテインバー...">
+            <button class="btn btn-primary" onclick="doProductSearch()">検索</button>
+          </div>
+          <div id="productSearchResults" class="search-results"></div>
+        </div>
+      </div>
+
+      <!-- Nutrition detail modal trigger area -->
+      <div id="nutritionDetailCard" style="display:none" class="card">
+        <div class="card-title" id="nutritionDetailTitle">栄養成分詳細</div>
+        <table class="nutrition-table" id="nutritionDetailTable"></table>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary btn-sm" onclick="addToLogFromSearch()">+ 食事に記録</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== AI ANALYSIS ===== -->
+    <div class="panel" id="panel-ai">
+      <div>
+        <div class="section-title">AI 栄養アドバイザー</div>
+        <div class="section-sub">AIがあなたの食事を分析・アドバイスします</div>
+      </div>
+
+      <div class="notice notice-info">
+        🔑 Anthropic APIキーを設定すると、リアルタイムAI分析が利用できます
+      </div>
+
+      <div class="card" style="padding:16px 20px">
+        <div class="form-group" style="margin-bottom:10px">
+          <label class="form-label">APIキー (claude.ai / Anthropic API)</label>
+          <div style="display:flex;gap:8px">
+            <input type="password" class="input" id="apiKeyInput" placeholder="sk-ant-...">
+            <button class="btn btn-secondary" onclick="saveApiKey()">保存</button>
+          </div>
+          <div class="helper-text">キーはブラウザのlocalStorageにのみ保存されます</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">今日の栄養バランス AI評価</div>
+        <div id="aiBalanceResult">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <div class="tag tag-green">✓ 糖質コントロール良好</div>
+            <div class="tag tag-orange">△ ビタミンC 不足気味</div>
+            <div class="tag tag-orange">△ 塩分やや多め</div>
+            <div class="tag tag-teal">✓ タンパク質 適正</div>
+          </div>
+          <p style="font-size:0.85rem;color:var(--text2);line-height:1.7">
+            朝食のフルグラと昼食の弁当で基礎的なエネルギーは充足しています。
+            ただし昼食の塩分量が高く、夕食での調整が必要です。野菜・果物からのビタミンCが
+            不足しているため、夕食にブロッコリーやパプリカを取り入れることをおすすめします。
+          </p>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="analyzeWithAI()">🤖 AI再分析</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">AIチャット <span class="badge">栄養相談</span></div>
+        <div class="ai-chat-container" id="aiChatContainer">
+          <div class="chat-msg ai">こんにちは！今日の食事記録を確認しました。何でも聞いてください 😊</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" class="input" id="chatInput" placeholder="例：夜に食べてもいいものは？" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()">送信</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RECOMMEND ===== -->
+    <div class="panel" id="panel-recommend">
+      <div>
+        <div class="section-title">次の食事を提案</div>
+        <div class="section-sub">「美味しい＆おなかいっぱい」×「食物バランス」の両立</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">あなたの今の状態</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div class="tag tag-yellow">残りカロリー 760 kcal</div>
+          <div class="tag tag-orange">タンパク質 27g 不足</div>
+          <div class="tag tag-teal">食物繊維 9g 不足</div>
+          <div class="tag tag-purple">今から：夕食タイム 🌙</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">食事の好みを教えてください</div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label class="form-label">今の気分</label>
+            <select class="select" id="moodSelect">
+              <option>がっつり食べたい</option>
+              <option>軽めが良い</option>
+              <option>温かいものが食べたい</option>
+              <option>さっぱりしたい</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">食事スタイル</label>
+            <select class="select" id="styleSelect">
+              <option>家で作る</option>
+              <option>近くで買う</option>
+              <option>外食する</option>
+              <option>デリバリー</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="generateRecommend()">✨ 提案を生成</button>
+      </div>
+
+      <div class="card" id="recommendResults">
+        <div class="card-title">🤖 AIのおすすめ</div>
+        <div class="rec-items">
+          <div class="rec-item">
+            <div class="rec-item-emoji">🥗</div>
+            <div class="rec-item-info">
+              <div class="rec-item-name">鮭の塩焼き定食（玄米・みそ汁・ほうれん草のおひたし）</div>
+              <div class="rec-item-reason">高タンパク・食物繊維豊富・低GI。血糖値安定、カルシウムも補える</div>
+              <div style="margin-top:4px;display:flex;gap:6px">
+                <span class="tag tag-green">約650 kcal</span>
+                <span class="tag tag-teal">タンパク質 38g</span>
+              </div>
+            </div>
+            <div class="rec-item-score">95点<br><span style="font-size:0.65rem;color:var(--text3)">バランス</span></div>
+          </div>
+          <div class="rec-item">
+            <div class="rec-item-emoji">🍲</div>
+            <div class="rec-item-info">
+              <div class="rec-item-name">豆腐と野菜の鍋（ポン酢）+ 玄米小盛り</div>
+              <div class="rec-item-reason">塩分控えめ、ビタミン・ミネラル豊富。前日のナトリウム過多を調整</div>
+              <div style="margin-top:4px;display:flex;gap:6px">
+                <span class="tag tag-green">約480 kcal</span>
+                <span class="tag tag-teal">食物繊維 12g</span>
+              </div>
+            </div>
+            <div class="rec-item-score">91点<br><span style="font-size:0.65rem;color:var(--text3)">バランス</span></div>
+          </div>
+          <div class="rec-item">
+            <div class="rec-item-emoji">🍜</div>
+            <div class="rec-item-info">
+              <div class="rec-item-name">鶏むね肉入り塩ラーメン（野菜多め）</div>
+              <div class="rec-item-reason">タンパク質確保・満腹感あり。ただし塩分注意・スープは残して</div>
+              <div style="margin-top:4px;display:flex;gap:6px">
+                <span class="tag tag-yellow">約720 kcal</span>
+                <span class="tag tag-orange">塩分注意</span>
+              </div>
+            </div>
+            <div class="rec-item-score">78点<br><span style="font-size:0.65rem;color:var(--text3)">バランス</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">あなたの自己評価</div>
+        <p style="font-size:0.82rem;color:var(--text3);margin-bottom:12px">直近の食事の「美味しさ・満足度」を教えてください（AIのバランス評価と組み合わせて次回の提案に活かします）</p>
+        <div class="satisfaction-row">
+          <div class="sat-btn" onclick="selectSat(this)">😞<span>不満</span></div>
+          <div class="sat-btn" onclick="selectSat(this)">😐<span>普通</span></div>
+          <div class="sat-btn selected" onclick="selectSat(this)">😊<span>満足</span></div>
+          <div class="sat-btn" onclick="selectSat(this)">😄<span>大満足</span></div>
+          <div class="sat-btn" onclick="selectSat(this)">🤩<span>最高！</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MAP ===== -->
+    <div class="panel" id="panel-map">
+      <div>
+        <div class="section-title">近くのお店を探す</div>
+        <div class="section-sub">栄養バランス・口コミ・あなたの好みを総合スコアで表示</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">現在地 / 検索エリア</div>
+        <div class="flex-row" style="margin-bottom:10px">
+          <input type="text" class="input" id="locationInput" placeholder="住所・エリア名を入力、または現在地を使用">
+          <button class="btn btn-primary" onclick="useCurrentLocation()">📍 現在地</button>
+          <button class="btn btn-secondary" onclick="searchNearby()">検索</button>
+        </div>
+        <div class="map-placeholder">
+          <div class="map-placeholder-icon">🗺️</div>
+          <div class="map-placeholder-text">「現在地」ボタンを押すか住所を入力してください</div>
+          <div style="font-size:0.72rem;color:var(--text3);position:relative">Google Maps APIキーを設定すると地図が表示されます</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">総合スコア順</div>
+        <div class="flex-row" style="margin-bottom:12px">
+          <span style="font-size:0.8rem;color:var(--text3)">スコア = 栄養適合 40% + 口コミ 30% + 好み 30%</span>
+          <button class="btn btn-secondary btn-sm ml-auto" onclick="toggleFavoritesOnly()">⭐ お気に入りのみ</button>
+        </div>
+        <div class="restaurant-grid" id="restaurantGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">お気に入りの店</div>
+        <div id="favRestaurantList"></div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="openAddFavModal()">+ お気に入りを追加</button>
+      </div>
+    </div>
+
+    <!-- ===== HISTORY ===== -->
+    <div class="panel" id="panel-history">
+      <div>
+        <div class="section-title">食事履歴</div>
+        <div class="section-sub">過去7日間のカロリー推移と記録</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">週間カロリー推移</div>
+        <div class="chart-bar-container" id="weeklyChart"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px" id="weeklyLabels"></div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">平均値（7日）</div>
+          <table class="nutrition-table">
+            <tr><th>項目</th><th>平均</th><th>目標</th></tr>
+            <tr><td>カロリー</td><td>1,820 kcal</td><td>2,000</td></tr>
+            <tr><td>タンパク質</td><td>68 g</td><td>75</td></tr>
+            <tr><td>炭水化物</td><td>240 g</td><td>260</td></tr>
+            <tr><td>脂質</td><td>61 g</td><td>65</td></tr>
+            <tr><td>食物繊維</td><td>16 g</td><td>21</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title">満足度 平均</div>
+          <div style="text-align:center;padding:16px 0">
+            <div style="font-size:3rem">😊</div>
+            <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent)">3.8</div>
+            <div style="font-size:0.78rem;color:var(--text3)">/ 5.0</div>
+          </div>
+          <div style="font-size:0.8rem;color:var(--text3);text-align:center">
+            バランス評価と組み合わせ、<br>次回の食事提案の精度が向上します
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">最近の食事ログ</div>
+        <div id="historyLog"></div>
+      </div>
+    </div>
+
+    <!-- ===== PROFILE ===== -->
+    <div class="panel" id="panel-profile">
+      <div>
+        <div class="section-title">プロフィール設定</div>
+        <div class="section-sub">あなたの情報を登録して、より正確な提案を受けましょう</div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+          <div class="profile-avatar-large">😊</div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700">山田 花子</div>
+            <div style="font-size:0.8rem;color:var(--text3)">登録歴 14日</div>
+          </div>
+        </div>
+        <div class="form-row cols-3">
+          <div class="form-group">
+            <label class="form-label">年齢</label>
+            <input type="number" class="input" value="28">
+          </div>
+          <div class="form-group">
+            <label class="form-label">性別</label>
+            <select class="select"><option>女性</option><option>男性</option><option>その他</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">身長 (cm)</label>
+            <input type="number" class="input" value="162">
+          </div>
+          <div class="form-group">
+            <label class="form-label">体重 (kg)</label>
+            <input type="number" class="input" value="54">
+          </div>
+          <div class="form-group">
+            <label class="form-label">活動量</label>
+            <select class="select">
+              <option>低（座り仕事中心）</option>
+              <option selected>中（週2-3運動）</option>
+              <option>高（毎日運動）</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">目標カロリー</label>
+            <input type="number" class="input" value="2000">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">目標設定</div>
+        <div class="flex-row wrap">
+          <div class="goal-chip selected">⚖️ 体重維持</div>
+          <div class="goal-chip" onclick="toggleGoal(this)">📉 ダイエット</div>
+          <div class="goal-chip" onclick="toggleGoal(this)">💪 筋肉増量</div>
+          <div class="goal-chip" onclick="toggleGoal(this)">🏃 持久力向上</div>
+          <div class="goal-chip" onclick="toggleGoal(this)">❤️ 健康維持</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">アレルギー・苦手食材</div>
+        <div class="allergy-badges" id="allergyBadges">
+          <div class="allergy-badge" onclick="toggleAllergy(this)">小麦</div>
+          <div class="allergy-badge active" onclick="toggleAllergy(this)">乳製品</div>
+          <div class="allergy-badge" onclick="toggleAllergy(this)">卵</div>
+          <div class="allergy-badge" onclick="toggleAllergy(this)">大豆</div>
+          <div class="allergy-badge" onclick="toggleAllergy(this)">えび</div>
+          <div class="allergy-badge" onclick="toggleAllergy(this)">かに</div>
+          <div class="allergy-badge" onclick="toggleAllergy(this)">ナッツ</div>
+          <div class="allergy-badge" onclick="toggleAllergy(this)">魚介類</div>
+          <div class="allergy-badge" onclick="toggleAllergy(this)">豚肉</div>
+          <div class="allergy-badge" onclick="toggleAllergy(this)">牛肉</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">好みの設定</div>
+        <div class="toggle-row">
+          <span class="toggle-label">🌙 夜は低カロリーを優先</span>
+          <div class="toggle-switch on" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">🩸 血糖値スパイクを避ける（朝・昼）</span>
+          <div class="toggle-switch on" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">🌿 植物性食品を多めに提案</span>
+          <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">🏠 家で作れる料理を優先</span>
+          <div class="toggle-switch on" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">💰 コスパ重視</span>
+          <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="saveProfile()">💾 保存する</button>
+        <button class="btn btn-secondary">リセット</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== MODALS ===== -->
+<!-- Add Fav Restaurant Modal -->
+<div class="modal-overlay" id="favModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⭐ お気に入りの店を追加</div>
+      <button class="modal-close" onclick="closeModal('favModal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">店名</label>
+        <input type="text" class="input" id="favName" placeholder="例：〇〇食堂">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ジャンル</label>
+        <select class="select" id="favGenre">
+          <option>定食</option><option>ラーメン</option><option>寿司</option><option>カフェ</option>
+          <option>焼肉</option><option>イタリアン</option><option>その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">メモ（得意料理・特徴など）</label>
+        <textarea class="textarea" id="favMemo" placeholder="野菜多め・ヘルシーメニューあり..."></textarea>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="saveFavoriteRestaurant()">追加</button>
+      <button class="btn btn-secondary" onclick="closeModal('favModal')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nutrition Detail Modal -->
+<div class="modal-overlay" id="nutritionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="nutritionModalTitle">栄養成分詳細</div>
+      <button class="modal-close" onclick="closeModal('nutritionModal')">✕</button>
+    </div>
+    <div id="nutritionModalContent"></div>
+    <div style="margin-top:16px">
+      <button class="btn btn-primary" onclick="addToLogFromModal(); closeModal('nutritionModal')">+ 食事に記録</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+var appState = {
+  apiKey: '',
+  mealLog: [],
+  favorites: [],
+  satisfactionVal: 3,
+  aiIngredients: [],
+  currentNutrition: null,
+  selectedNutritionItem: null,
+  showFavOnly: false
+};
+
+var mealItemCounter = 10;
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+  try { appState.apiKey = localStorage.getItem('nutriai_key') || ''; } catch(e) {}
+  if (appState.apiKey) {
+    var ki = document.getElementById('apiKeyInput');
+    if (ki) ki.value = appState.apiKey;
+  }
+  renderCalStrip();
+  renderRestaurants();
+  renderHistory();
+  renderWeeklyChart();
+  setHeaderDate();
+})();
+
+function setHeaderDate() {
+  var el = document.getElementById('headerDate');
+  if (!el) return;
+  var d = new Date();
+  var days = ['日','月','火','水','木','金','土'];
+  el.textContent = d.getFullYear() + '/' + pad(d.getMonth()+1) + '/' + pad(d.getDate()) + ' (' + days[d.getDay()] + ')';
+}
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPanel(id) {
+  var panels = document.querySelectorAll('.panel');
+  for (var i = 0; i < panels.length; i++) {
+    panels[i].classList.remove('active');
+  }
+  var target = document.getElementById('panel-' + id);
+  if (target) target.classList.add('active');
+
+  var navItems = document.querySelectorAll('.nav-item');
+  for (var j = 0; j < navItems.length; j++) {
+    navItems[j].classList.remove('active');
+  }
+  var activeNav = document.querySelector('.nav-item[data-panel="' + id + '"]');
+  if (activeNav) activeNav.classList.add('active');
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(btn, paneId) {
+  var tabGroup = btn.closest('.tabs');
+  if (!tabGroup) return;
+  var btns = tabGroup.querySelectorAll('.tab-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+  btn.classList.add('active');
+
+  var parentCard = tabGroup.closest('.card') || tabGroup.parentElement;
+  var panes = parentCard.querySelectorAll('.tab-pane');
+  for (var j = 0; j < panes.length; j++) panes[j].classList.remove('active');
+  var target = document.getElementById(paneId);
+  if (target) target.classList.add('active');
+}
+
+// ============================================================
+// CALENDAR STRIP
+// ============================================================
+function renderCalStrip() {
+  var el = document.getElementById('calStrip');
+  if (!el) return;
+  var days = ['日','月','火','水','木','金','土'];
+  var today = new Date();
+  var html = '';
+  for (var i = -3; i <= 3; i++) {
+    var d = new Date(today);
+    d.setDate(today.getDate() + i);
+    var isToday = i === 0;
+    var dot = (i !== 0 && i <= 0) ? '<div class="cal-day-dot"></div>' : '';
+    html += '<div class="cal-day' + (isToday ? ' today' : '') + '">';
+    html += '<div class="cal-day-name">' + days[d.getDay()] + '</div>';
+    html += '<div class="cal-day-num">' + d.getDate() + '</div>';
+    html += dot;
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// ============================================================
+// SATISFACTION BUTTONS
+// ============================================================
+function selectSat(el) {
+  var parent = el.parentElement;
+  var btns = parent.querySelectorAll('.sat-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
+  el.classList.add('selected');
+  appState.satisfactionVal = parseInt(el.dataset.val || '3', 10);
+}
+
+// ============================================================
+// TOGGLE SWITCH
+// ============================================================
+function toggleSwitch(el) {
+  el.classList.toggle('on');
+}
+
+// ============================================================
+// GOAL CHIP
+// ============================================================
+function toggleGoal(el) {
+  el.classList.toggle('selected');
+}
+
+// ============================================================
+// ALLERGY BADGE
+// ============================================================
+function toggleAllergy(el) {
+  el.classList.toggle('active');
+}
+
+// ============================================================
+// MANUAL MEAL ADD
+// ============================================================
+function addMealManual() {
+  var name = document.getElementById('manualName').value.trim();
+  var cal = parseInt(document.getElementById('manualCal').value || '0', 10);
+  if (!name) { alert('料理名・食品名を入力してください'); return; }
+  if (!cal) { alert('カロリーを入力してください'); return; }
+
+  var timing = document.getElementById('mealTiming').value;
+  var prot = parseFloat(document.getElementById('manualProt').value || '0');
+  var carb = parseFloat(document.getElementById('manualCarb').value || '0');
+  var fat = parseFloat(document.getElementById('manualFat').value || '0');
+
+  appState.mealLog.push({ name: name, cal: cal, prot: prot, carb: carb, fat: fat, timing: timing });
+  addMealItemToDOM(name, timing, cal, prot + 'g P / ' + carb + 'g C / ' + fat + 'g F', emojiForTiming(timing));
+  updateDashboardStats(cal, prot, carb, fat);
+  clearManual();
+  alert('記録しました！');
+}
+
+function emojiForTiming(t) {
+  var map = { '朝食':'🌅', '昼食':'☀️', '夕食':'🌙', '間食':'🍡' };
+  return map[t] || '🍽️';
+}
+
+function clearManual() {
+  ['manualName','manualCal','manualProt','manualCarb','manualFat','manualFiber','manualSalt'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+function addMealItemToDOM(name, timing, cal, sub, emoji) {
+  mealItemCounter++;
+  var id = 'mi_' + mealItemCounter;
+  var container = document.getElementById('mealLogList');
+  if (!container) return;
+  var div = document.createElement('div');
+  div.className = 'meal-item';
+  div.id = id;
+  div.innerHTML =
+    '<div class="meal-item-icon">' + (emoji || '🍽️') + '</div>' +
+    '<div class="meal-item-info"><div class="meal-item-name">' + escHtml(name) + '</div>' +
+    '<div class="meal-item-sub">' + escHtml(sub || '') + '</div></div>' +
+    '<div class="meal-item-cal">' + cal + ' kcal</div>' +
+    '<button class="meal-item-del" onclick="deleteMealItem(\'' + id + '\')">✕</button>';
+  container.appendChild(div);
+}
+
+function deleteMealItem(id) {
+  var el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function updateDashboardStats(cal, prot, carb, fat) {
+  function addToEl(elId, val) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    var cur = parseInt(el.textContent.replace(/[^0-9]/g,''), 10) || 0;
+    el.textContent = (cur + val).toLocaleString();
+  }
+  addToEl('dashCal', cal);
+  addToEl('dashProt', Math.round(prot));
+  addToEl('dashCarb', Math.round(carb));
+  addToEl('dashFat', Math.round(fat));
+}
+
+// ============================================================
+// AI DISH ESTIMATOR
+// ============================================================
+var DISH_DB = {
+  'フルグラ': [
+    { name: 'フルグラ', amount: 50, unit: 'g', cal: 210, del: false },
+    { name: '牛乳', amount: 80, unit: 'ml', cal: 50, del: false },
+    { name: 'プルーン', amount: 3, unit: '個', cal: 60, del: true },
+  ],
+  'カレーライス': [
+    { name: 'ご飯', amount: 200, unit: 'g', cal: 336, del: false },
+    { name: 'カレールー', amount: 50, unit: 'g', cal: 225, del: false },
+    { name: '鶏もも肉', amount: 80, unit: 'g', cal: 152, del: true },
+    { name: 'じゃがいも', amount: 60, unit: 'g', cal: 46, del: false },
+    { name: '玉ねぎ', amount: 60, unit: 'g', cal: 22, del: false },
+    { name: 'にんじん', amount: 30, unit: 'g', cal: 12, del: false },
+  ],
+  'スパゲッティ': [
+    { name: 'パスタ（乾麺）', amount: 100, unit: 'g', cal: 357, del: false },
+    { name: 'トマトソース', amount: 80, unit: 'g', cal: 40, del: false },
+    { name: 'ひき肉', amount: 60, unit: 'g', cal: 120, del: true },
+    { name: 'オリーブオイル', amount: 10, unit: 'ml', cal: 90, del: false },
+    { name: 'パルメザンチーズ', amount: 10, unit: 'g', cal: 45, del: true },
+  ],
+  'チャーハン': [
+    { name: 'ご飯', amount: 200, unit: 'g', cal: 336, del: false },
+    { name: '卵', amount: 1, unit: '個', cal: 76, del: false },
+    { name: '長ねぎ', amount: 30, unit: 'g', cal: 10, del: false },
+    { name: 'チャーシュー', amount: 40, unit: 'g', cal: 80, del: true },
+    { name: 'サラダ油', amount: 15, unit: 'ml', cal: 135, del: false },
+  ]
+};
+
+function estimateDish() {
+  var name = document.getElementById('aiDishName').value.trim();
+  if (!name) { alert('料理名を入力してください'); return; }
+  var btn = document.getElementById('estimateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  setTimeout(function() {
+    btn.disabled = false;
+    btn.textContent = '推測';
+    var key = Object.keys(DISH_DB).find(function(k) { return name.indexOf(k) !== -1 || k.indexOf(name) !== -1; });
+    var ingredients = key ? JSON.parse(JSON.stringify(DISH_DB[key])) : generateGenericIngredients(name);
+    appState.aiIngredients = ingredients;
+    renderIngredients();
+    document.getElementById('ingredientSection').style.display = 'block';
+    calcAiNutrition();
+  }, 1000);
+}
+
+function generateGenericIngredients(name) {
+  return [
+    { name: name + '（主食材）', amount: 150, unit: 'g', cal: 200, del: false },
+    { name: '調味料', amount: 1, unit: '大さじ', cal: 30, del: true },
+  ];
+}
+
+function renderIngredients() {
+  var list = document.getElementById('ingredientList');
+  if (!list) return;
+  list.innerHTML = '';
+  appState.aiIngredients.forEach(function(ing, idx) {
+    var row = document.createElement('div');
+    row.className = 'ingredient-row';
+    row.innerHTML =
+      '<div class="ingredient-name">' + escHtml(ing.name) + '</div>' +
+      '<input class="ingredient-amount-input" type="number" value="' + ing.amount + '" min="0" oninput="updateIngredientAmount(' + idx + ', this.value)">' +
+      '<div class="ingredient-unit">' + escHtml(ing.unit) + '</div>' +
+      '<button class="ingredient-del" onclick="removeIngredient(' + idx + ')" title="削除">✕</button>';
+    list.appendChild(row);
+  });
+}
+
+function updateIngredientAmount(idx, val) {
+  if (appState.aiIngredients[idx]) {
+    appState.aiIngredients[idx].amount = parseFloat(val) || 0;
+    calcAiNutrition();
+  }
+}
+
+function removeIngredient(idx) {
+  appState.aiIngredients.splice(idx, 1);
+  renderIngredients();
+  calcAiNutrition();
+}
+
+function addIngredient() {
+  var name = prompt('追加する材料名を入力してください');
+  if (!name) return;
+  var amount = prompt('量を入力してください（例：100）') || '50';
+  var unit = prompt('単位を入力してください（例：g、個、大さじ）') || 'g';
+  appState.aiIngredients.push({ name: name, amount: parseFloat(amount) || 50, unit: unit, cal: 50, del: true });
+  renderIngredients();
+  calcAiNutrition();
+}
+
+function calcAiNutrition() {
+  var totalCal = 0;
+  appState.aiIngredients.forEach(function(ing) {
+    var ratio = ing.amount / (ing.amount > 0 ? ing.amount : 1);
+    totalCal += ing.cal * (ing.amount / 100);
+  });
+  // simplified estimate: cal per 100g baseline
+  totalCal = appState.aiIngredients.reduce(function(sum, ing) {
+    return sum + (ing.cal * ing.amount / 100);
+  }, 0);
+  totalCal = Math.round(totalCal);
+
+  var el = document.getElementById('aiNutritionResult');
+  if (!el) return;
+  var prot = Math.round(totalCal * 0.18 / 4);
+  var carb = Math.round(totalCal * 0.55 / 4);
+  var fat = Math.round(totalCal * 0.27 / 9);
+
+  appState.currentNutrition = { cal: totalCal, prot: prot, carb: carb, fat: fat };
+
+  el.innerHTML =
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+    '<div class="tag tag-yellow">' + totalCal + ' kcal</div>' +
+    '<div class="tag tag-teal">タンパク質 ' + prot + 'g</div>' +
+    '<div class="tag tag-green">炭水化物 ' + carb + 'g</div>' +
+    '<div class="tag tag-orange">脂質 ' + fat + 'g</div>' +
+    '</div>';
+}
+
+function confirmAiMeal() {
+  var n = appState.currentNutrition;
+  if (!n) { alert('まず料理名を入力して推測ボタンを押してください'); return; }
+  var name = document.getElementById('aiDishName').value.trim();
+  var timing = 'その他';
+  addMealItemToDOM(name, timing, n.cal, 'タンパク質 ' + n.prot + 'g / 炭水化物 ' + n.carb + 'g', '🍽️');
+  updateDashboardStats(n.cal, n.prot, n.carb, n.fat);
+  alert('記録しました！');
+  document.getElementById('aiDishName').value = '';
+  document.getElementById('ingredientSection').style.display = 'none';
+  appState.aiIngredients = [];
+}
+
+// ============================================================
+// FOOD SEARCH
+// ============================================================
+var FOOD_DB = [
+  { name: 'ご飯（白米）', brand: '一般食品', cal: 168, prot: 2.5, carb: 37.1, fat: 0.3, per: '100g' },
+  { name: '鶏むね肉（皮なし）', brand: '一般食品', cal: 108, prot: 22.3, carb: 0, fat: 1.5, per: '100g' },
+  { name: '豆腐（絹）', brand: '一般食品', cal: 56, prot: 5.0, carb: 2.0, fat: 3.0, per: '100g' },
+  { name: '鮭（生）', brand: '一般食品', cal: 133, prot: 22.3, carb: 0.1, fat: 4.1, per: '100g' },
+  { name: 'ほうれん草', brand: '一般食品', cal: 20, prot: 2.2, carb: 3.1, fat: 0.4, per: '100g' },
+  { name: 'バナナ', brand: '一般食品', cal: 86, prot: 1.1, carb: 22.5, fat: 0.2, per: '1本(100g)' },
+  { name: '卵', brand: '一般食品', cal: 151, prot: 12.3, carb: 0.3, fat: 10.3, per: '100g' },
+  { name: '牛乳', brand: '一般食品', cal: 67, prot: 3.3, carb: 4.8, fat: 3.8, per: '100ml' },
+  // Chain items
+  { name: 'ビッグマック', brand: 'マクドナルド', cal: 557, prot: 27, carb: 43, fat: 31, per: '1個' },
+  { name: 'チキンマックナゲット(5個)', brand: 'マクドナルド', cal: 270, prot: 14, carb: 16, fat: 16, per: '5個' },
+  { name: 'ポテト（M）', brand: 'マクドナルド', cal: 410, prot: 5, carb: 54, fat: 19, per: '1個' },
+  { name: '牛丼（並）', brand: '吉野家', cal: 652, prot: 20, carb: 97, fat: 19, per: '1杯' },
+  { name: '牛丼（並）', brand: '松屋', cal: 636, prot: 20, carb: 95, fat: 18, per: '1杯' },
+  { name: 'チキン南蛮弁当', brand: 'ほっともっと', cal: 820, prot: 28, carb: 110, fat: 28, per: '1個' },
+  { name: 'フルグラ（オリジナル）', brand: 'カルビー', cal: 200, prot: 4.0, carb: 34.7, fat: 5.9, per: '50g' },
+  { name: 'プロテインバー チョコ', brand: 'inバー', cal: 180, prot: 15, carb: 18, fat: 5, per: '1本' },
+  { name: 'カロリーメイト ブロック チーズ', brand: '大塚製薬', cal: 400, prot: 8.4, carb: 43.6, fat: 22.2, per: '4本' },
+];
+
+function searchFoods(query) {
+  query = query.trim().toLowerCase();
+  if (!query) return [];
+  return FOOD_DB.filter(function(f) {
+    return f.name.toLowerCase().indexOf(query) !== -1 || f.brand.toLowerCase().indexOf(query) !== -1;
+  });
+}
+
+function renderSearchResults(results, containerId) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  if (!results.length) {
+    el.innerHTML = '<div class="empty-state"><div>検索結果がありません</div></div>';
+    return;
+  }
+  el.innerHTML = results.map(function(f) {
+    return '<div class="search-result-item" onclick="showNutritionDetail(' + escHtml(JSON.stringify(f)) + ')">' +
+      '<div class="meal-item-icon">🍽️</div>' +
+      '<div style="flex:1"><div class="search-result-name">' + escHtml(f.name) + '</div>' +
+      '<div class="search-result-brand">' + escHtml(f.brand) + ' · ' + escHtml(f.per) + '</div></div>' +
+      '<div class="search-result-cal">' + f.cal + ' kcal</div>' +
+      '</div>';
+  }).join('');
+}
+
+function doLogSearch() {
+  var q = document.getElementById('logSearchInput').value;
+  renderSearchResults(searchFoods(q), 'logSearchResults');
+}
+
+function doGeneralSearch() {
+  var q = document.getElementById('genSearchInput').value;
+  var results = searchFoods(q).filter(function(f) { return f.brand === '一般食品'; });
+  renderSearchResults(results, 'genSearchResults');
+}
+
+function doChainSearch() {
+  var q = document.getElementById('chainSearchInput').value;
+  var chains = ['マクドナルド','吉野家','松屋','ほっともっと'];
+  var results = searchFoods(q).filter(function(f) { return chains.indexOf(f.brand) !== -1; });
+  renderSearchResults(results, 'chainSearchResults');
+}
+
+function doProductSearch() {
+  var q = document.getElementById('productSearchInput').value;
+  var chains = ['一般食品'];
+  var results = searchFoods(q).filter(function(f) { return chains.indexOf(f.brand) === -1; });
+  renderSearchResults(results, 'productSearchResults');
+}
+
+function showNutritionDetail(f) {
+  if (typeof f === 'string') {
+    try { f = JSON.parse(f); } catch(e) { return; }
+  }
+  appState.selectedNutritionItem = f;
+  document.getElementById('nutritionModalTitle').textContent = f.name + '（' + f.brand + '）';
+  document.getElementById('nutritionModalContent').innerHTML =
+    '<table class="nutrition-table">' +
+    '<tr><th>栄養素</th><th>量</th><th>単位あたり（' + escHtml(f.per) + '）</th></tr>' +
+    '<tr><td>カロリー</td><td>' + f.cal + '</td><td>kcal</td></tr>' +
+    '<tr><td>タンパク質</td><td>' + f.prot + '</td><td>g</td></tr>' +
+    '<tr><td>炭水化物</td><td>' + f.carb + '</td><td>g</td></tr>' +
+    '<tr><td>脂質</td><td>' + f.fat + '</td><td>g</td></tr>' +
+    '</table>';
+  openModal('nutritionModal');
+}
+
+function addToLogFromModal() {
+  var f = appState.selectedNutritionItem;
+  if (!f) return;
+  addMealItemToDOM(f.name, '記録', f.cal, f.brand + ' · ' + f.per, '🍽️');
+  updateDashboardStats(f.cal, f.prot, f.carb, f.fat);
+}
+
+function addToLogFromSearch() {
+  addToLogFromModal();
+  document.getElementById('nutritionDetailCard').style.display = 'none';
+}
+
+// ============================================================
+// RESTAURANTS
+// ============================================================
+var RESTAURANTS = [
+  { name: '和食さと', genre: '定食', emoji: '🍱', score: 94, rating: 4.2, dist: '0.3km', reason: '野菜定食が豊富・塩分少なめ・バランス◎', fav: false },
+  { name: 'おぼん de ごはん', genre: 'カフェ定食', emoji: '🥗', score: 91, rating: 4.5, dist: '0.8km', reason: '野菜サラダランチが人気・ヘルシーメニュー多数', fav: true },
+  { name: '大戸屋', genre: '定食', emoji: '🍳', score: 89, rating: 4.1, dist: '1.2km', reason: '栄養バランス表示あり・焼き魚定食が◎', fav: false },
+  { name: '松屋', genre: '牛丼', emoji: '🍚', score: 72, rating: 3.8, dist: '0.2km', reason: 'コスパ良し・塩分やや多め', fav: false },
+  { name: 'サブウェイ', genre: 'サンドイッチ', emoji: '🥖', score: 85, rating: 4.0, dist: '0.5km', reason: 'カスタマイズ自由・野菜増量可能', fav: false },
+];
+
+function renderRestaurants() {
+  var grid = document.getElementById('restaurantGrid');
+  if (!grid) return;
+  var list = appState.showFavOnly ? RESTAURANTS.filter(function(r) { return r.fav; }) : RESTAURANTS;
+  grid.innerHTML = list.map(function(r, i) {
+    return '<div class="restaurant-card">' +
+      '<div class="restaurant-rank">' + (i + 1) + '</div>' +
+      '<div class="restaurant-emoji">' + r.emoji + '</div>' +
+      '<div class="restaurant-info">' +
+        '<div class="restaurant-name">' + escHtml(r.name) + ' <span style="font-size:0.75rem;color:var(--text3)">· ' + escHtml(r.genre) + '</span></div>' +
+        '<div class="restaurant-sub">⭐ ' + r.rating + '  📍 ' + escHtml(r.dist) + '  ' + escHtml(r.reason) + '</div>' +
+      '</div>' +
+      '<div class="restaurant-score"><div class="restaurant-score-val">' + r.score + '</div><div class="restaurant-score-label">総合</div></div>' +
+      '<button class="fav-btn" onclick="toggleRestaurantFav(' + i + ', this)">' + (r.fav ? '⭐' : '☆') + '</button>' +
+    '</div>';
+  }).join('');
+
+  var favList = document.getElementById('favRestaurantList');
+  if (favList) {
+    var favs = RESTAURANTS.filter(function(r) { return r.fav; });
+    if (favs.length === 0) {
+      favList.innerHTML = '<div class="empty-state" style="padding:16px"><div class="es-icon">⭐</div>お気に入りの店はまだありません</div>';
+    } else {
+      favList.innerHTML = favs.map(function(r) {
+        return '<div class="history-row"><span style="font-size:1.2rem">' + r.emoji + '</span><span class="history-name">' + escHtml(r.name) + '</span><span class="tag tag-green">' + r.score + '点</span></div>';
+      }).join('');
+    }
+  }
+}
+
+function toggleRestaurantFav(idx, btn) {
+  RESTAURANTS[idx].fav = !RESTAURANTS[idx].fav;
+  btn.textContent = RESTAURANTS[idx].fav ? '⭐' : '☆';
+  renderRestaurants();
+}
+
+function toggleFavoritesOnly() {
+  appState.showFavOnly = !appState.showFavOnly;
+  renderRestaurants();
+}
+
+function useCurrentLocation() {
+  if (!navigator.geolocation) { alert('お使いのブラウザでは位置情報が使えません'); return; }
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      document.getElementById('locationInput').value = '現在地: ' + pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4);
+      searchNearby();
+    },
+    function() { alert('位置情報の取得に失敗しました。住所を入力してください。'); }
+  );
+}
+
+function searchNearby() {
+  renderRestaurants();
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+
+function closeModal(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+
+function openAddFavModal() {
+  openModal('favModal');
+}
+
+function saveFavoriteRestaurant() {
+  var name = document.getElementById('favName').value.trim();
+  if (!name) { alert('店名を入力してください'); return; }
+  RESTAURANTS.push({
+    name: name,
+    genre: document.getElementById('favGenre').value,
+    emoji: '🏪',
+    score: 80,
+    rating: 4.0,
+    dist: '?km',
+    reason: document.getElementById('favMemo').value.trim(),
+    fav: true
+  });
+  closeModal('favModal');
+  renderRestaurants();
+  document.getElementById('favName').value = '';
+  document.getElementById('favMemo').value = '';
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+var HISTORY_DATA = [
+  { date: '04/18', name: 'オートミール・バナナ・ヨーグルト', cal: 380, timing: '朝' },
+  { date: '04/18', name: 'チキンサラダランチ', cal: 520, timing: '昼' },
+  { date: '04/18', name: '鮭定食', cal: 680, timing: '夕' },
+  { date: '04/19', name: '食パン・ゆで卵', cal: 320, timing: '朝' },
+  { date: '04/19', name: 'ざるそば', cal: 430, timing: '昼' },
+  { date: '04/19', name: '野菜炒め・ご飯', cal: 590, timing: '夕' },
+  { date: '04/20', name: 'フルグラ（牛乳）', cal: 390, timing: '朝' },
+  { date: '04/20', name: 'チキン南蛮弁当', cal: 820, timing: '昼' },
+];
+
+function renderHistory() {
+  var el = document.getElementById('historyLog');
+  if (!el) return;
+  el.innerHTML = HISTORY_DATA.map(function(h) {
+    return '<div class="history-row">' +
+      '<span class="history-date">' + escHtml(h.date) + '</span>' +
+      '<span class="tag ' + (h.timing==='朝'?'tag-yellow':h.timing==='昼'?'tag-teal':'tag-purple') + '" style="flex-shrink:0">' + h.timing + '食</span>' +
+      '<span class="history-name">' + escHtml(h.name) + '</span>' +
+      '<span class="history-cal">' + h.cal + ' kcal</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderWeeklyChart() {
+  var chart = document.getElementById('weeklyChart');
+  var labels = document.getElementById('weeklyLabels');
+  if (!chart) return;
+  var data = [1950, 1750, 2100, 1820, 1680, 1240, 0];
+  var dLabels = ['月','火','水','木','金','土','今日'];
+  var max = Math.max.apply(null, data.filter(function(v) { return v > 0; }));
+  chart.innerHTML = data.map(function(v, i) {
+    var h = v > 0 ? Math.round((v / max) * 80) : 8;
+    var cls = i === 6 ? 'today-bar' : (v > 0 ? 'filled' : '');
+    return '<div class="chart-bar-wrap"><div class="chart-bar ' + cls + '" style="height:' + h + 'px"></div></div>';
+  }).join('');
+  if (labels) {
+    labels.innerHTML = dLabels.map(function(l) {
+      return '<div class="chart-bar-label" style="flex:1;text-align:center">' + l + '</div>';
+    }).join('');
+  }
+}
+
+// ============================================================
+// AI CHAT
+// ============================================================
+var CHAT_REPLIES = [
+  '今日の食事を見ると、タンパク質が少し不足気味です。夕食に魚や大豆製品を取り入れてみてください 🐟',
+  '血糖値の急上昇を防ぐには、炭水化物と一緒に食物繊維やタンパク質を摂ることが効果的です 🥗',
+  'カロリー的にはまだ余裕があります。夕食は600〜700kcalが目安です。低GIの玄米や根菜類がおすすめ 🍚',
+  'ビタミンCが不足しているようです。夕食にブロッコリーやパプリカを追加するといいですよ 🥦',
+  '今日の塩分摂取量がやや高めです。夕食は薄味にして、お汁は少し残すようにしましょう 🍜',
+];
+var chatReplyIdx = 0;
+
+function sendChat() {
+  var input = document.getElementById('chatInput');
+  var container = document.getElementById('aiChatContainer');
+  if (!input || !container) return;
+  var msg = input.value.trim();
+  if (!msg) return;
+
+  var userDiv = document.createElement('div');
+  userDiv.className = 'chat-msg user';
+  userDiv.textContent = msg;
+  container.appendChild(userDiv);
+  input.value = '';
+
+  var loadingDiv = document.createElement('div');
+  loadingDiv.className = 'ai-loading';
+  loadingDiv.innerHTML = '<div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div>';
+  container.appendChild(loadingDiv);
+  container.scrollTop = container.scrollHeight;
+
+  var apiKey = appState.apiKey || (document.getElementById('apiKeyInput') ? document.getElementById('apiKeyInput').value.trim() : '');
+
+  if (apiKey) {
+    sendToClaudeAPI(msg, apiKey, function(reply) {
+      container.removeChild(loadingDiv);
+      var aiDiv = document.createElement('div');
+      aiDiv.className = 'chat-msg ai';
+      aiDiv.textContent = reply;
+      container.appendChild(aiDiv);
+      container.scrollTop = container.scrollHeight;
+    });
+  } else {
+    setTimeout(function() {
+      container.removeChild(loadingDiv);
+      var aiDiv = document.createElement('div');
+      aiDiv.className = 'chat-msg ai';
+      aiDiv.textContent = CHAT_REPLIES[chatReplyIdx % CHAT_REPLIES.length];
+      chatReplyIdx++;
+      container.appendChild(aiDiv);
+      container.scrollTop = container.scrollHeight;
+    }, 1200);
+  }
+}
+
+function sendToClaudeAPI(userMsg, apiKey, callback) {
+  var systemPrompt = 'あなたは栄養士AIアシスタントです。ユーザーの今日の食事（朝食：フルグラ50g・牛乳・プルーン3個、昼食：チキン南蛮弁当820kcal）を踏まえて、栄養面のアドバイスを日本語で簡潔に答えてください。';
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 400,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    var text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : 'エラーが発生しました。';
+    callback(text);
+  })
+  .catch(function(err) {
+    callback('APIエラーが発生しました: ' + err.message);
+  });
+}
+
+// ============================================================
+// AI ANALYSIS
+// ============================================================
+function analyzeWithAI() {
+  var el = document.getElementById('aiBalanceResult');
+  if (!el) return;
+  el.innerHTML = '<div class="ai-loading" style="display:inline-flex"><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div></div><span style="margin-left:8px;font-size:0.85rem;color:var(--text3)">AI分析中...</span>';
+  var apiKey = appState.apiKey || (document.getElementById('apiKeyInput') ? document.getElementById('apiKeyInput').value.trim() : '');
+  setTimeout(function() {
+    el.innerHTML =
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">' +
+      '<div class="tag tag-green">✓ 糖質コントロール良好</div>' +
+      '<div class="tag tag-orange">△ ビタミンC 不足気味</div>' +
+      '<div class="tag tag-orange">△ 塩分やや多め</div>' +
+      '<div class="tag tag-teal">✓ タンパク質 適正</div>' +
+      '</div>' +
+      '<p style="font-size:0.85rem;color:var(--text2);line-height:1.7">分析完了。本日のカロリーは目標の62%で適正範囲内です。昼食の塩分が高いため夕食は薄味を心がけ、ビタミンCの補給のため野菜・果物を追加することをおすすめします。</p>';
+  }, 1500);
+}
+
+// ============================================================
+// RECOMMEND
+// ============================================================
+function generateRecommend() {
+  var el = document.getElementById('recommendResults');
+  if (!el) return;
+  var mood = document.getElementById('moodSelect').value;
+  var style = document.getElementById('styleSelect').value;
+  el.querySelector('.card-title').textContent = '🤖 AIのおすすめ（' + mood + '・' + style + '）';
+}
+
+// ============================================================
+// PHOTO
+// ============================================================
+function handlePhoto(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var preview = document.getElementById('photoPreview');
+    if (!preview) return;
+    preview.innerHTML =
+      '<img src="' + e.target.result + '" style="max-width:100%;max-height:200px;border-radius:12px;margin-bottom:12px">' +
+      '<div class="notice notice-info">📷 写真を解析しています...</div>';
+    setTimeout(function() {
+      preview.innerHTML += '<div class="notice notice-warn" style="margin-top:8px">🤖 推定：ご飯・鶏肉・野菜炒め（約650kcal）として記録しますか？<br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="addPhotoMeal()">記録する</button></div>';
+    }, 1500);
+  };
+  reader.readAsDataURL(file);
+}
+
+function addPhotoMeal() {
+  addMealItemToDOM('写真から記録した食事', 'その他', 650, 'タンパク質 28g / 炭水化物 85g', '📷');
+  updateDashboardStats(650, 28, 85, 20);
+  alert('記録しました！');
+}
+
+// ============================================================
+// PROFILE
+// ============================================================
+function saveProfile() {
+  alert('プロフィールを保存しました！');
+}
+
+function saveApiKey() {
+  var key = document.getElementById('apiKeyInput').value.trim();
+  appState.apiKey = key;
+  try { localStorage.setItem('nutriai_key', key); } catch(e) {}
+  alert('APIキーを保存しました。');
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function escHtml(str) {
+  if (typeof str !== 'string') str = String(str);
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+// Close modals on overlay click
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('open');
+  }
+});
+
+// Enter key for search inputs
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    var t = e.target;
+    if (t.id === 'logSearchInput') doLogSearch();
+    else if (t.id === 'genSearchInput') doGeneralSearch();
+    else if (t.id === 'chainSearchInput') doChainSearch();
+    else if (t.id === 'productSearchInput') doProductSearch();
+  }
+});
+</script>
+</body>
+</html>
